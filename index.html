@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificador de Senha</title>
+
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: #d0d0d0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  .container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    box-sizing: border-box;
+  }
+
+  h2 {
+    text-align: center;
+    color: #222;
+    margin-bottom: 20px;
+  }
+
+  .field {
+    position: relative;
+    width: 100%;
+  }
+
+  input[type="password"],
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 40px 12px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    font-size: 15px;
+    box-sizing: border-box;
+  }
+
+  .eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    color: #c2410c;
+    transition: 0.2s ease;
+  }
+
+  .eye-icon:hover {
+    color: #000;
+  }
+
+  .progress {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .bar {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    background: linear-gradient(90deg, #f97316, #16a34a);
+  }
+
+  .strength {
+    margin-top: 12px;
+    font-weight: bold;
+    text-align: center;
+    min-height: 1.25em;
+  }
+
+  .fraca { color: #dc2626; }
+  .media { color: #f97316; }
+  .forte { color: #16a34a; }
+
+  ul {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #374151;
+    padding-left: 18px;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>Verificador de Senha</h2>
+
+    <div class="field">
+      <input
+        id="senha"
+        type="password"
+        placeholder="Digite sua senha..."
+        oninput="verificarSenha()"
+        autocomplete="new-password"
+      />
+      <span id="toggleSenha" class="eye-icon" onclick="toggleSenha()" title="Mostrar/ocultar senha">👁️</span>
+    </div>
+
+    <div class="progress">
+      <div id="bar" class="bar"></div>
+    </div>
+
+    <div id="resultado" class="strength"></div>
+    <ul id="dicas"></ul>
+  </div>
+
+<script>
+  // Alternar visibilidade da senha
+  function toggleSenha() {
+    const input = document.getElementById('senha');
+    const icon = document.getElementById('toggleSenha');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = '🚫';
+    } else {
+      input.type = 'password';
+      icon.textContent = '👁️';
+    }
+
+    // manter foco e cursor no final
+    input.focus();
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
+  }
+
+  // Verificação da força da senha
+  function verificarSenha() {
+    const senha = document.getElementById("senha").value;
+    const resultado = document.getElementById("resultado");
+    const dicas = document.getElementById("dicas");
+    const bar = document.getElementById("bar");
+
+    let pontos = 0;
+    const listaDicas = [];
+
+    if (senha.length >= 8) pontos += 1;
+    else listaDicas.push("Use pelo menos 8 caracteres.");
+
+    if (/[A-Z]/.test(senha)) pontos += 1;
+    else listaDicas.push("Adicione letras maiúsculas (A-Z).");
+
+    if (/[a-z]/.test(senha)) pontos += 1;
+    else listaDicas.push("Inclua letras minúsculas (a-z).");
+
+    if (/\d/.test(senha)) pontos += 1;
+    else listaDicas.push("Adicione números (0-9).");
+
+    if (/[^A-Za-z0-9\s]/.test(senha)) pontos += 1;
+    else listaDicas.push("Inclua caracteres especiais (@, #, $, %, &, *).");
+
+    const percent = Math.round((pontos / 5) * 100);
+    bar.style.width = percent + "%";
+
+    if (senha.length === 0) {
+      resultado.textContent = "";
+      resultado.className = "strength";
+      dicas.innerHTML = "";
+      bar.style.width = "0%";
+      return;
+    }
+
+    if (pontos <= 2) {
+      resultado.textContent = "Senha Fraca 🔴";
+      resultado.className = "strength fraca";
+    } else if (pontos === 3 || pontos === 4) {
+      resultado.textContent = "Senha Média 🟠";
+      resultado.className = "strength media";
+    } else {
+      resultado.textContent = "Senha Forte 🟢";
+      resultado.className = "strength forte";
+    }
+
+    const dicasExtras = [];
+    if (senha.length > 0 && senha.length < 12)
+      dicasExtras.push("Use mais de 12 caracteres para maior segurança.");
+    if (/^[A-Za-z]+$/.test(senha))
+      dicasExtras.push("Misture letras com números e símbolos.");
+    if (/^[0-9]+$/.test(senha))
+      dicasExtras.push("Evite usar apenas números.");
+
+    const todasDicas = listaDicas.concat(dicasExtras);
+    dicas.innerHTML = todasDicas.map(d => `<li>${d}</li>`).join("");
+  }
+
+  window.addEventListener('load', verificarSenha);
+</script>
+</body>
+</html>
